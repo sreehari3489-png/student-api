@@ -1,0 +1,17 @@
+<h1>Welcome</h1>
+
+<h2>
+
+    {{ request.user.username }}
+
+</h2>
+
+<a href="{% url 'logout' %}">
+    Logout
+</a>
+<p>
+    Students API:
+    <a href="/students/">
+        View Students
+    </a>
+</p>
