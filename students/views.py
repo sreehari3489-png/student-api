@@ -10,6 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
 
+from django.http import HttpResponse
+
 class StudentViewSet(viewsets.ModelViewSet):
 
     queryset = Student.objects.all()
@@ -93,7 +95,7 @@ def home_view(request):
     )
 
 def abc(request):
-    return redirect('login')
+    return HttpResponse("Student API is running successfully")
 
 
 def logout_view(request):
