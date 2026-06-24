@@ -1,16 +1,21 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
 
-from rest_framework  import viewsets
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
-from .models import Student
-
-from .serializers import StudentSerializer
-
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-
 from django_filters.rest_framework import DjangoFilterBackend
 
-from django.http import HttpResponse
+from .models import Student
+from .serializers import StudentSerializer
+
+
+# --------------------
+# Student API ViewSet
+# --------------------
 
 class StudentViewSet(viewsets.ModelViewSet):
 
@@ -18,34 +23,36 @@ class StudentViewSet(viewsets.ModelViewSet):
 
     serializer_class = StudentSerializer
 
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend]
 
     filterset_fields = ['course']
 
-from django.shortcuts import render, redirect
+    def get_queryset(self):
 
-from django.contrib.auth.models import User
+        if getattr(self, 'swagger_fake_view', False):
+            return Student.objects.none()
 
-from django.contrib.auth import (
-    authenticate,
-    login,
-    logout
-)
+        if not self.request.user.is_authenticated:
+            return Student.objects.none()
 
-from django.contrib.auth.decorators import login_required
+        return Student.objects.filter(user=self.request.user)
 
-from django.contrib import messages
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+# --------------------
+# Normal Django Views
+# --------------------
 
 def register_view(request):
 
     if request.method == 'POST':
 
         username = request.POST['username']
-
         email = request.POST['email']
-
         password = request.POST['password']
 
         User.objects.create_user(
@@ -56,17 +63,14 @@ def register_view(request):
 
         return redirect('login')
 
-    return render(
-        request,
-        'register.html'
-    )
+    return render(request, 'register.html')
+
 
 def login_view(request):
 
     if request.method == 'POST':
 
         username = request.POST['username']
-
         password = request.POST['password']
 
         user = authenticate(
@@ -81,21 +85,13 @@ def login_view(request):
 
             return redirect('home')
 
-    return render(
-        request,
-        'login.html'
-    )
+    return render(request, 'login.html')
+
 
 @login_required
 def home_view(request):
 
-    return render(
-        request,
-        'home.html'
-    )
-
-def abc(request):
-    return HttpResponse("Student API is running successfully")
+    return render(request, 'home.html')
 
 
 def logout_view(request):
@@ -103,4 +99,8 @@ def logout_view(request):
     logout(request)
 
     return redirect('login')
-# Create your views here.
+
+
+def abc(request):
+
+    return HttpResponse("Student API is running successfully")

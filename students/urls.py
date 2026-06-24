@@ -2,9 +2,7 @@ from rest_framework.routers import DefaultRouter
 from .views import StudentViewSet
 
 router = DefaultRouter()
-
-router.register('students', StudentViewSet)
-
+router.register('students', StudentViewSet, basename='students')
 
 from django.urls import path
 
@@ -15,10 +13,12 @@ from .views import (
     logout_view,
     abc
 )
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
 urlpatterns = [
 
     path('', abc, name='abc'),
